@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Tạo Tem Elip (Bản Nâng Cấp)</title>
+    <style>
+        /* ========================================= */
+        /* 1. KHAI BÁO FONT VÀ CSS VARIABLES        */
+        /* ========================================= */
+        
+        @font-face {
+            /* Khai báo phông chữ dùng cho bản in */
+            font-family: 'UTM HelvetIns';
+            src: url('UTM HelvetIns.ttf') format('truetype');
+            /* Tải file font từ cùng thư mục */
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            /* Khai báo biến CSS để thiết kế giao diện hiện đại */
+            --primary: #2563eb;       /* Xanh dương chủ đạo */
+            --primary-hover: #1d4ed8; /* Xanh dương đậm khi hover */
+            --success: #16a34a;       /* Xanh lá cho nút in */
+            --success-hover: #15803d; /* Xanh lá đậm khi hover */
+            --bg-color: #f1f5f9;      /* Màu nền trang web xám nhạt */
+            --card-bg: #ffffff;       /* Màu nền khối điều khiển */
+            --text-main: #1e293b;     /* Màu chữ chính */
+            --text-muted: #64748b;    /* Màu chữ phụ */
+            --border: #cbd5e1;        /* Màu viền input */
+            --radius-lg: 12px;        /* Bo góc lớn */
+            --radius-md: 8px;         /* Bo góc vừa */
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Đổ bóng */
+        }
+
+        /* ========================================= */
+        /* 2. GIAO DIỆN PHẦN MỀM (MODERN UI)         */
+        /* ========================================= */
+
+        body {
+            /* Định dạng toàn trang */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            /* Font chữ hiện đại, sạch sẽ cho UI */
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Căn giữa toàn bộ cụm điều khiển ra giữa màn hình PC */
+        }
+
+        .controls-container {
+            /* Khối chứa cụm điều khiển */
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 750px;
+            /* Rộng tối đa 750px cho gọn gàng */
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            /* Cắt viền các phần tử con tràn ra */
+            margin-bottom: 20px;
+        }
+
+        .header {
+            /* Phần tiêu đề */
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .section {
+            /* Khối nội dung từng phần */
+            padding: 20px 25px;
+        }
+
+        .form-group {
+            /* Nhóm nhãn + ô nhập */
+            margin-bottom: 15px;
+        }
+
+        label {
+            /* Nhãn mô tả */
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            /* Các ô nhập liệu */
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            /* Hiệu ứng chuyển màu viền mượt mà */
+            font-family: inherit;
+        }
+
+        textarea:focus, input:focus {
+            /* Trạng thái khi click vào ô nhập liệu */
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            /* Phát sáng viền xanh */
+        }
+
+        textarea {
+            /* Riêng với textarea */
+            resize: vertical;
+            /* Chỉ cho phép kéo dọc */
+            font-family: monospace;
+            /* Font đơn cách dễ nhìn danh sách */
+            min-height: 120px;
+        }
+
+        /* --- BẢNG CÀI ĐẶT NÂNG CAO --- */
+        .advanced-panel {
+            /* Khối nâng cao mặc định bị ẩn */
+            display: none;
+            background-color: #f8fafc;
+            border-top: 1px dashed var(--border);
+            padding: 20px 25px;
+        }
+
+        .advanced-panel.active {
+            /* Class dùng JS bật lên để hiển thị */
+            display: block;
+        }
+
+        .input-row {
+            /* Cấu trúc hàng ngang chứa Text, Scale, Size, Gap */
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row > div {
+            flex: 1;
+        }
+
+        .input-row .narrow {
+            /* Cột hẹp dành cho số liệu % và mm */
+            flex: 0 0 80px;
+        }
+
+        /* --- NÚT BẤM --- */
+        .actions {
+            /* Khối chứa nút dưới cùng */
+            padding: 20px 25px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        button {
+            /* CSS cơ bản cho nút */
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-toggle {
+            /* Nút mở rộng nâng cao */
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 13px;
+        }
+
+        .btn-toggle:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: var(--success-hover); }
+
+        /* ========================================= */
+        /* 3. CẤU HÌNH TRANG IN (A4 NGANG, CĂN GIỮA) */
+        /* ========================================= */
+
+        @page {
+            /* Lệnh cho máy in */
+            size: A4 landscape;
+            /* Khổ A4, chiều ngang */
+            margin: 0;
+            /* Xóa lề mặc định hệ thống */
+        }
+
+        #printArea {
+            /* Khối nền trang giấy */
+            width: 297mm;
+            /* Chiều dài A4 ngang là 297mm */
+            background: #fff;
+            /* Màu nền trắng */
+            margin: 0 auto;
+            /* Căn khối giấy nằm giữa màn hình để preview */
+            padding: 10mm 0;
+            /* Tạo lề an toàn trục dọc: trên dưới 10mm */
+            box-sizing: border-box;
+            
+            /* Lệnh căn giữa các tem ra giữa trang */
+            display: flex;
+            flex-direction: column;
+            /* Xếp tem theo chiều dọc dọc xuống */
+            align-items: center;
+            /* Căn giữa toàn bộ cặp tem theo trục ngang (giữa trang A4) */
+        }
+
+        /* ========================================= */
+        /* 4. THIẾT KẾ TEM ELIP QUÂN SỰ             */
+        /* ========================================= */
+
+        .tag-pair {
+            /* Cụm gồm 2 tem đi liền nhau */
+            display: flex;
+            gap: 10mm;
+            /* Khoảng cách giữa tem Cơ quan và tem Tên là 10mm */
+            margin-bottom: 5mm;
+            /* Khoảng cách với cặp tem ở hàng tiếp theo là 5mm */
+            page-break-inside: avoid;
+            /* Lệnh bắt buộc máy in không được cắt đứt cặp này giữa 2 trang */
+        }
+
+        .tag-ellipse {
+            /* Khối định hình elip cơ sở */
+            width: 100mm;
+            height: 50mm;
+            /* Kích thước bắt buộc: 100x50mm */
+            background-color: #27318b;
+            /* Màu xanh bộ đội */
+            border-radius: 50% / 50%;
+            /* Bóp cong thành hình elip */
+            position: relative;
+            /* Tọa độ tham chiếu làm gốc */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Ép thẻ text vào chính giữa tâm elip */
+            box-sizing: border-box;
+            overflow: hidden;
+            /* Cắt viền thừa */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            /* Lệnh ưu tiên in màu nền, nếu không máy in sẽ in thẻ màu trắng */
+        }
+
+        .tag-ellipse::before {
+            /* Layer tạo đường viền trắng */
+            content: '';
+            position: absolute;
+            top: 3mm; bottom: 3mm; left: 3mm; right: 3mm;
+            /* Thụt lề viền vào 3mm từ mép */
+            border: 0.5mm solid #ffffff;
+            /* Độ dày 0.5mm nét liền màu trắng */
+            border-radius: 50% / 50%;
+            /* Form elip đồng tâm */
+            pointer-events: none;
+            /* Vô hiệu hóa chuột tác động lên viền */
+        }
+
+        /* --- QUY CÁCH CHỮ VÀ FONT --- */
+        .text-common {
+            /* Thuộc tính dùng chung cho mọi dòng chữ */
+            color: #ffffff !important;
+            /* Chữ trắng */
+            font-family: 'UTM HelvetIns', Arial, sans-serif;
+            /* Nạp font chữ */
+            text-transform: uppercase;
+            /* Tự động IN HOA */
+            text-align: center;
+            /* Căn lề giữa */
+            white-space: nowrap;
+            /* Cấm xuống dòng */
+            transform-origin: center;
+            /* Tâm co giãn ở giữa */
+            z-index: 1;
+            /* Đẩy layer nổi lên trên viền */
+        }
+
+        /* Vùng bọc chữ tem Cơ quan (Gồm 2 dòng) */
+        .org-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .text-org-top {
+            /* Tem cơ quan: Dòng trên */
+            /* Cỡ chữ và margin-bottom sẽ được gán dynamic qua JS từ Advanced panel */
+        }
+
+        .text-org-bot {
+            /* Tem cơ quan: Dòng dưới */
+            /* Cỡ chữ sẽ được gán dynamic qua JS */
+        }
+
+        .text-name {
+            /* Tem tên */
+            /* Cỡ chữ sẽ được gán dynamic qua JS */
+        }
+
+        /* ========================================= */
+        /* 5. ẨN GIAO DIỆN KHI XUẤT LỆNH IN PDF      */
+        /* ========================================= */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .controls-container { display: none; }
+            /* Xóa giao diện điều khiển, chỉ giữ lại thẻ in */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls-container">
+        
+        <div class="header">
+            <h2>Công cụ tạo tem Elip Quân sự</h2>
+        </div>
+
+        <div class="section">
+            <div class="form-group">
+                <label>Nhập danh sách Tên / Chức vụ (Mỗi nội dung 1 dòng):</label>
+                <textarea id="nameInput" placeholder="Ví dụ: NGUYỄN VĂN A">NGUYỄN VĂN A
+TRẦN THỊ B</textarea>
+            </div>
+            
+            <button class="btn-toggle" onclick="toggleAdvanced()">
+                Cài đặt nâng cao (Nội dung cơ quan, Tỉ lệ, Kích thước) ▼
+            </button>
+        </div>
+
+        <div class="advanced-panel" id="advancedPanel">
+            <h4 style="margin-top:0; color:var(--primary); font-size: 14px;">Tùy chỉnh thông số chi tiết</h4>
+            
+            <div class="form-group">
+                <label>Tem Cơ quan - Dòng trên:</label>
+                <div class="input-row">
+                    <input type="text" id="orgTopText" value="HỌC VIỆN KỸ THUẬT QUÂN SỰ">
+                    <div class="narrow">
+                        <input type="number" id="orgTopScale" value="75" title="Co ngang (%)">
+                        <small style="color:#64748b; font-size:11px;">Co %</small>
+                    </div>
+                    <div class="narrow">
+                        <input type="number" id="orgTopSize" value="8" title="Cỡ chữ (mm)">
+                        <small style="color:#64748b; font-size:11px;">Cao(mm)</small>
+                    </div>
+                    <div class="narrow">
+                        <input type="number" id="orgGap" value="4" step="0.5" title="Khoảng cách dòng (mm)">
+                        <small style="color:#64748b; font-size:11px;">Cách dưới(mm)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tem Cơ quan - Dòng dưới:</label>
+                <div class="input-row">
+                    <input type="text" id="orgBotText" value="TIỂU ĐOÀN 4">
+                    <div class="narrow">
+                        <input type="number" id="orgBotScale" value="75" title="Co ngang (%)">
+                        <small style="color:#64748b; font-size:11px;">Co %</small>
+                    </div>
+                    <div class="narrow">
+                        <input type="number" id="orgBotSize" value="10" title="Cỡ chữ (mm)">
+                        <small style="color:#64748b; font-size:11px;">Cao(mm)</small>
+                    </div>
+                    <div class="narrow">
+                        </div>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+
+            <div class="form-group">
+                <label>Tem Tên - Thông số chữ:</label>
+                <div class="input-row">
+                    <div></div>
+                    <div class="narrow">
+                        <input type="number" id="nameScale" value="75" title="Co ngang (%)">
+                        <small style="color:#64748b; font-size:11px;">Co %</small>
+                    </div>
+                    <div class="narrow">
+                        <input type="number" id="nameSize" value="12" title="Cỡ chữ (mm)">
+                        <small style="color:#64748b; font-size:11px;">Cao(mm)</small>
+                    </div>
+                    <div class="narrow">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="generateTags()">
+                <i>👁</i> 1. Cập nhật bản in
+            </button>
+            <button class="btn-success" onclick="window.print()">
+                <i>🖨</i> 2. Xuất PDF / In A4
+            </button>
+        </div>
+
+    </div>
+
+    <div id="printArea"></div>
+
+    <script>
+        // ========================================= //
+        // MÃ JAVASCRIPT XỬ LÝ NGHIỆP VỤ             //
+        // ========================================= //
+
+        // 1. Hàm bật/tắt bảng Advanced Panel
+        function toggleAdvanced() {
+            const panel = document.getElementById('advancedPanel');
+            // Thêm/Xóa class 'active' để ẩn hiện khối nâng cao
+            panel.classList.toggle('active');
+        }
+
+        // 2. Hàm lõi tạo cấu trúc DOM Tem
+        function generateTags() {
+            
+            // --- ĐỌC DỮ LIỆU TỪ FORM ---
+            const namesRaw = document.getElementById('nameInput').value;
+            // Tách mảng tên, xóa khoảng trắng thừa, loại bỏ các dòng rỗng vô nghĩa
+            const names = namesRaw.split('\n').map(n => n.trim()).filter(n => n !== '');
+
+            // Trỏ lấy dữ liệu chữ, kích thước, hệ số co ngang
+            const topText = document.getElementById('orgTopText').value;
+            const topScale = (document.getElementById('orgTopScale').value || 75) / 100;
+            const topSize = document.getElementById('orgTopSize').value || 8;
+            const orgGap = document.getElementById('orgGap').value || 6; // Lấy tham số khoảng cách (mặc định 6mm)
+
+            const botText = document.getElementById('orgBotText').value;
+            const botScale = (document.getElementById('orgBotScale').value || 75) / 100;
+            const botSize = document.getElementById('orgBotSize').value || 10;
+
+            const nameScale = (document.getElementById('nameScale').value || 75) / 100;
+            const nameSize = document.getElementById('nameSize').value || 12;
+
+            // Xóa rỗng khu vực in để nạp đợt render mới
+            const printArea = document.getElementById('printArea');
+            printArea.innerHTML = ''; 
+
+            // Cảnh báo nếu ô tên trống
+            if (names.length === 0) {
+                alert('Chưa nhập danh sách tên!');
+                return;
+            }
+
+            // --- VÒNG LẶP SINH DOM ---
+            names.forEach(name => {
+                
+                // [Container] Tạo hàng bọc cặp tem
+                const pairWrapper = document.createElement('div');
+                pairWrapper.className = 'tag-pair';
+
+                // ===================================
+                // TEM 1: CƠ QUAN CHỦ QUẢN (BÊN TRÁI)
+                // ===================================
+                const orgEllipse = document.createElement('div');
+                orgEllipse.className = 'tag-ellipse';
+                
+                const orgTextContainer = document.createElement('div');
+                orgTextContainer.className = 'org-container';
+                
+                // Khởi tạo dòng Cơ quan (Trên)
+                const spanTop = document.createElement('div');
+                spanTop.className = 'text-common text-org-top';
+                spanTop.innerText = topText;
+                
+                // Áp dụng linh hoạt tham số co chữ, kích thước và khoảng cách dòng (mm)
+                spanTop.style.transform = `scaleX(${topScale})`;
+                spanTop.style.fontSize = `${topSize}mm`;
+                spanTop.style.lineHeight = `${topSize}mm`;
+                spanTop.style.marginBottom = `${orgGap}mm`; // Áp dụng khoảng cách tùy chỉnh
+                
+                // Khởi tạo dòng Đơn vị (Dưới)
+                const spanBot = document.createElement('div');
+                spanBot.className = 'text-common text-org-bot';
+                spanBot.innerText = botText;
+                // Áp dụng linh hoạt tham số co chữ và kích thước (mm)
+                spanBot.style.transform = `scaleX(${botScale})`;
+                spanBot.style.fontSize = `${botSize}mm`;
+                spanBot.style.lineHeight = `${botSize}mm`;
+
+                // Đẩy 2 dòng vào container dọc
+                orgTextContainer.appendChild(spanTop);
+                orgTextContainer.appendChild(spanBot);
+                // Đẩy container vào nền elip cơ quan
+                orgEllipse.appendChild(orgTextContainer);
+
+
+                // ===================================
+                // TEM 2: TÊN CÁ NHÂN (BÊN PHẢI)
+                // ===================================
+                const nameEllipse = document.createElement('div');
+                nameEllipse.className = 'tag-ellipse';
+                
+                // Khởi tạo dòng Tên
+                const nameText = document.createElement('div');
+                nameText.className = 'text-common text-name';
+                nameText.innerText = name;
+                // Áp dụng linh hoạt tham số co chữ và kích thước (mm)
+                nameText.style.transform = `scaleX(${nameScale})`;
+                nameText.style.fontSize = `${nameSize}mm`;
+                nameText.style.lineHeight = `${nameSize}mm`;
+                
+                // Đẩy tên vào nền elip
+                nameEllipse.appendChild(nameText);
+
+
+                // ===================================
+                // RÁP CẶP TEM VÀO KHUNG IN
+                // ===================================
+                pairWrapper.appendChild(orgEllipse); // Cơ quan trái
+                pairWrapper.appendChild(nameEllipse); // Tên phải
+                
+                // Xuất DOM ra giao diện UI
+                printArea.appendChild(pairWrapper);
+            });
+        }
+
+        // Render sẵn dữ liệu mặc định ngay khi mở trang
+        generateTags();
+    </script>
+</body>
+</html>
