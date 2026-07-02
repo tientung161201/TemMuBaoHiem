@@ -2,12 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tool Tạo Tem Quân Sự (Bản Chuẩn Xuất PDF)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Tạo Tem Quân Sự (Lưu PDF Trực Tiếp)</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         /* ========================================= */
-        /* 1. KHAI BÁO FONT & BIẾN MÀU GIAO DIỆN     */
+        /* 1. KHAI BÁO FONT & CSS CƠ BẢN             */
         /* ========================================= */
         @font-face {
             font-family: 'UTM HelvetIns';
@@ -18,23 +20,14 @@
 
         :root {
             --primary: #1d4ed8;
-            --primary-hover: #1e40af;
             --success: #15803d;
-            --success-hover: #166534;
             --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
             --border: #cbd5e1;
-            --radius: 8px;
         }
 
-        /* ========================================= */
-        /* 2. GIAO DIỆN RESPONSIVE (PC & MOBILE)     */
-        /* ========================================= */
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: system-ui, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-main);
             margin: 0;
             padding: 15px;
             display: flex;
@@ -43,26 +36,23 @@
         }
 
         .controls-container {
-            background: var(--card-bg);
+            background: #fff;
             width: 100%;
             max-width: 800px;
-            border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
 
         .header {
             background: var(--primary);
             color: white;
-            padding: 15px 20px;
+            padding: 15px;
             text-align: center;
         }
 
         .header h2 { margin: 0; font-size: 20px; }
-
         .section { padding: 20px; }
-
         .form-group { margin-bottom: 15px; }
 
         label {
@@ -75,46 +65,31 @@
         textarea, input {
             width: 100%;
             padding: 10px;
-            font-size: 14px;
             border: 1px solid var(--border);
             border-radius: 6px;
             box-sizing: border-box;
-            font-family: inherit;
         }
+        
+        textarea { resize: vertical; min-height: 100px; font-family: monospace; }
 
-        textarea {
-            resize: vertical;
-            font-family: monospace;
-            min-height: 100px;
-        }
-
-        /* Bảng Nâng Cao */
+        /* Bảng nâng cao */
         .advanced-panel {
             display: none;
-            background-color: #f1f5f9;
+            background: #f1f5f9;
             padding: 20px;
             border-top: 1px solid var(--border);
         }
-
         .advanced-panel.active { display: block; }
-
-        .input-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
+        .input-row { display: flex; gap: 10px; align-items: center; }
         .input-row > div { flex: 1; }
         .input-row .narrow { flex: 0 0 80px; }
 
         .actions {
             padding: 20px;
-            background: #f8fafc;
-            border-top: 1px solid var(--border);
             display: flex;
             gap: 15px;
             justify-content: center;
-            flex-wrap: wrap; /* Tự xuống dòng trên Mobile */
+            border-top: 1px solid var(--border);
         }
 
         button {
@@ -125,81 +100,54 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            flex: 1;
             min-width: 200px;
         }
-
+        
         .btn-toggle {
             background: transparent;
             color: var(--primary);
             border: 1px dashed var(--primary);
-            margin-top: 5px;
-            padding: 8px;
-            font-size: 13px;
             width: 100%;
-            min-width: auto;
+            padding: 8px;
         }
 
         .btn-primary { background: var(--primary); }
         .btn-success { background: var(--success); }
 
-        /* Khung Preview có thể cuộn ngang trên Mobile */
+        /* ========================================= */
+        /* 2. KHUNG IN & THIẾT KẾ TEM                */
+        /* ========================================= */
         .preview-wrapper {
             width: 100%;
             max-width: 297mm;
             overflow-x: auto;
             background: #e2e8f0;
             padding: 10px;
-            border-radius: var(--radius);
+            border-radius: 8px;
         }
 
-        /* CSS cho thiết bị nhỏ (Mobile) */
-        @media (max-width: 600px) {
-            .input-row { flex-direction: column; align-items: stretch; }
-            .input-row .narrow { flex: auto; }
-            button { width: 100%; }
-        }
-
-        /* ========================================= */
-        /* 3. CẤU HÌNH TRANG IN (KHÓA CỨNG A4 NGANG) */
-        /* ========================================= */
-        @page {
-            size: A4 landscape;
-            margin: 0;
-        }
-
+        /* Khung in A4 ngang chuẩn */
         #printArea {
             width: 297mm;
             min-height: 210mm;
             background: #fff;
             margin: 0 auto;
-            padding: 10mm 0;
+            padding: 10mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* ========================================= */
-        /* 4. KỸ THUẬT RENDER TEM (TUYỆT ĐỐI CHÍNH XÁC) */
-        /* ========================================= */
         .tag-pair {
             display: flex;
             gap: 10mm;
             margin-bottom: 5mm;
-            page-break-inside: avoid;
         }
 
         .tag-ellipse {
-            /* Khóa cứng kích thước 100x50mm, chống méo */
             width: 100mm;
             height: 50mm;
-            min-width: 100mm;
-            max-width: 100mm;
-            min-height: 50mm;
-            max-height: 50mm;
-            flex-shrink: 0; 
-            
             background-color: #27318b;
             border-radius: 50% / 50%;
             position: relative;
@@ -208,8 +156,6 @@
             justify-content: center;
             box-sizing: border-box;
             overflow: hidden;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
         }
 
         .tag-ellipse::before {
@@ -236,27 +182,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1;
             width: 100%;
-        }
-
-        /* ========================================= */
-        /* 5. LOẠI BỎ UI KHI XUẤT PDF                */
-        /* ========================================= */
-        @media print {
-            body { background: none; padding: 0; }
-            .controls-container, .preview-wrapper { 
-                display: none; 
-                padding: 0; 
-                margin: 0; 
-                background: none; 
-            }
-            #printArea {
-                /* Đảm bảo khung in đẩy sát lề giấy */
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
+            z-index: 1;
         }
     </style>
 </head>
@@ -273,7 +200,7 @@
                 <textarea id="nameInput">NGUYỄN VĂN A
 TRẦN THỊ B</textarea>
             </div>
-            <button class="btn-toggle" onclick="toggleAdvanced()">+ Tùy chỉnh Nâng cao (Kích thước, Khoảng cách)</button>
+            <button class="btn-toggle" onclick="toggleAdvanced()">+ Tùy chỉnh Nâng cao</button>
         </div>
 
         <div class="advanced-panel" id="advancedPanel">
@@ -281,49 +208,26 @@ TRẦN THỊ B</textarea>
                 <label>Dòng Cơ quan (Trên):</label>
                 <div class="input-row">
                     <input type="text" id="orgTopText" value="HỌC VIỆN KỸ THUẬT QUÂN SỰ">
-                    <div class="narrow">
-                        <small>Co %</small>
-                        <input type="number" id="orgTopScale" value="75">
-                    </div>
-                    <div class="narrow">
-                        <small>Cao(mm)</small>
-                        <input type="number" id="orgTopSize" value="8">
-                    </div>
-                    <div class="narrow">
-                        <small>Cách dưới</small>
-                        <input type="number" id="orgGap" value="6" step="0.5">
-                    </div>
+                    <div class="narrow"><small>Co %</small><input type="number" id="orgTopScale" value="75"></div>
+                    <div class="narrow"><small>Cao(mm)</small><input type="number" id="orgTopSize" value="8"></div>
+                    <div class="narrow"><small>Cách dưới</small><input type="number" id="orgGap" value="6" step="0.5"></div>
                 </div>
             </div>
-
             <div class="form-group">
                 <label>Dòng Đơn vị (Dưới):</label>
                 <div class="input-row">
                     <input type="text" id="orgBotText" value="TIỂU ĐOÀN 4">
-                    <div class="narrow">
-                        <small>Co %</small>
-                        <input type="number" id="orgBotScale" value="75">
-                    </div>
-                    <div class="narrow">
-                        <small>Cao(mm)</small>
-                        <input type="number" id="orgBotSize" value="10">
-                    </div>
+                    <div class="narrow"><small>Co %</small><input type="number" id="orgBotScale" value="75"></div>
+                    <div class="narrow"><small>Cao(mm)</small><input type="number" id="orgBotSize" value="10"></div>
                     <div class="narrow"></div>
                 </div>
             </div>
-
             <div class="form-group" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px;">
                 <label>Tem Tên (Bên phải):</label>
                 <div class="input-row">
                     <div></div>
-                    <div class="narrow">
-                        <small>Co %</small>
-                        <input type="number" id="nameScale" value="75">
-                    </div>
-                    <div class="narrow">
-                        <small>Cao(mm)</small>
-                        <input type="number" id="nameSize" value="12">
-                    </div>
+                    <div class="narrow"><small>Co %</small><input type="number" id="nameScale" value="75"></div>
+                    <div class="narrow"><small>Cao(mm)</small><input type="number" id="nameSize" value="12"></div>
                     <div class="narrow"></div>
                 </div>
             </div>
@@ -331,7 +235,7 @@ TRẦN THỊ B</textarea>
 
         <div class="actions">
             <button class="btn-primary" onclick="generateTags()">1. Lên Khuôn</button>
-            <button class="btn-success" onclick="window.print()">2. Xuất PDF</button>
+            <button class="btn-success" id="downloadBtn" onclick="downloadPDF()">2. Lưu file PDF trực tiếp</button>
         </div>
     </div>
 
@@ -363,10 +267,7 @@ TRẦN THỊ B</textarea>
             const printArea = document.getElementById('printArea');
             printArea.innerHTML = ''; 
 
-            if (names.length === 0) {
-                alert('Dữ liệu trống. Vui lòng nhập tên.');
-                return;
-            }
+            if (names.length === 0) return;
 
             names.forEach(name => {
                 const pairWrapper = document.createElement('div');
@@ -414,6 +315,31 @@ TRẦN THỊ B</textarea>
                 pairWrapper.appendChild(orgEllipse);
                 pairWrapper.appendChild(nameEllipse);
                 printArea.appendChild(pairWrapper);
+            });
+        }
+
+        // Script xuất PDF tự động dùng html2pdf.js
+        function downloadPDF() {
+            const element = document.getElementById('printArea');
+            const btn = document.getElementById('downloadBtn');
+            
+            // Đổi trạng thái nút bấm
+            btn.innerText = "Đang xử lý...";
+            btn.disabled = true;
+
+            // Cấu hình thông số xuất file
+            const opt = {
+                margin:       0,
+                filename:     'Tem_Quan_Su.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { scale: 2, useCORS: true }, // scale: 2 giúp ảnh nét hơn
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Gọi lệnh lưu và khôi phục nút bấm
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerText = "2. Lưu file PDF trực tiếp";
+                btn.disabled = false;
             });
         }
 
